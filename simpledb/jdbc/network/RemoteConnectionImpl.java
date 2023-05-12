@@ -16,18 +16,23 @@ class RemoteConnectionImpl extends UnicastRemoteObject implements RemoteConnecti
    private SimpleDB db;
    private Transaction currentTx;
    private Planner planner;
+   private int CommitAndRoolbackNum;
    
    /**
     * Creates a remote connection
     * and begins a new transaction for it.
     * @throws RemoteException
     */
+
    RemoteConnectionImpl(SimpleDB db) throws RemoteException {
       this.db = db;
       currentTx = db.newTx();
       planner = db.planner();
    }
    
+   public int CountCommitRoolback(){
+      return this.CommitAndRoolbackNum;
+   }
    /**
     * Creates a new RemoteStatement for this connection.
     * @see simpledb.jdbc.network.RemoteConnection#createStatement()
@@ -63,6 +68,7 @@ class RemoteConnectionImpl extends UnicastRemoteObject implements RemoteConnecti
    void commit() {
       currentTx.commit();
       currentTx = db.newTx();
+      this.CommitAndRoolbackNum++;
    }
    
    /**
@@ -72,6 +78,7 @@ class RemoteConnectionImpl extends UnicastRemoteObject implements RemoteConnecti
    void rollback() {
       currentTx.rollback();
       currentTx = db.newTx();
+      this.CommitAndRoolbackNum++;
    }
 }
 
