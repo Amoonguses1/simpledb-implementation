@@ -8,6 +8,12 @@ public class FileMgr {
    private int blocksize;
    private boolean isNew;
    private Map<String,RandomAccessFile> openFiles = new HashMap<>();
+   // 3.15
+   private int readAndWriteBlocks = 0;
+
+   public int CountReadWrite(){
+      return this.readAndWriteBlocks;
+   }
 
    public FileMgr(File dbDirectory, int blocksize) {
       this.dbDirectory = dbDirectory;
@@ -33,6 +39,7 @@ public class FileMgr {
       catch (IOException e) {
          throw new RuntimeException("cannot read block " + blk);
       }
+      this.readAndWriteBlocks++;
    }
 
    public synchronized void write(BlockId blk, Page p) {
@@ -44,6 +51,7 @@ public class FileMgr {
       catch (IOException e) {
          throw new RuntimeException("cannot write block" + blk);
       }
+      this.readAndWriteBlocks++;
    }
 
    public synchronized BlockId append(String filename) {

@@ -9,7 +9,6 @@ public class FileTest {
       FileMgr fm = db.fileMgr();
       BlockId blk = new BlockId("testfile", 2);
       int pos1 = 88;
-
       Page p1 = new Page(fm.blockSize());
       p1.setString(pos1, "abcdefghijklm");
       int size = Page.maxLength("abcdefghijklm".length());

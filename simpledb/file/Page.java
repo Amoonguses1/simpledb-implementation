@@ -17,12 +17,25 @@ public class Page {
       bb = ByteBuffer.wrap(b);
    }
 
+   public short getShort(short offset) {
+      return bb.getShort();
+   }
+
+   public void setShort(int offset, short value) {
+      bb.putShort(offset, value);
+   }
+   
    public int getInt(int offset) {
       return bb.getInt(offset);
    }
 
    public void setInt(int offset, int n) {
-      bb.putInt(offset, n);
+      if (bb.remaining() >= 4){
+         bb.putInt(offset, n);
+      }else {
+         System.out.println("page size error.");
+      }
+      
    }
 
    public byte[] getBytes(int offset) {
@@ -34,9 +47,13 @@ public class Page {
    }
 
    public void setBytes(int offset, byte[] b) {
-      bb.position(offset);
-      bb.putInt(b.length);
-      bb.put(b);
+      if (bb.remaining() >= b.length){
+         bb.position(offset);
+         bb.putInt(b.length);
+         bb.put(b);
+      }else{
+         System.out.println("page size error.");
+      }
    }
    
    public String getString(int offset) {
