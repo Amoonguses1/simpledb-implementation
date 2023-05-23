@@ -9,6 +9,13 @@ public class BlockId {
       this.blknum   = blknum;
    }
 
+   public void increment() {
+      this.blknum++;
+   }
+
+   public void decrement() {
+      this.blknum--;
+   }
    public String fileName() {
       return filename;
    }
