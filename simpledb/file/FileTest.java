@@ -10,21 +10,58 @@ public class FileTest {
       BlockId blk = new BlockId("testfile", 2);
       int pos1 = 88;
       Page p1 = new Page(fm.blockSize());
-      p1.setString(pos1, "abcdefghijklm");
-      int size = Page.maxLength("abcdefghijklm".length());
-      int pos2 = pos1 + size;
-      for(int i=0; i<5; i++){
-         p1 = p1.fixedSetInt(fm, blk, p1, pos2+4*i, 60+10*i);   
-      }
-      fm.write(blk, p1);
       Page p2 = new Page(fm.blockSize());
+
+      // // check setInt
+      // for(int i=0; i<5; i++){
+      //    p1 = p1.fixedSetInt(fm, blk, p1, pos1+4*i, 60+10*i);   
+      // }
+      // fm.write(blk, p1);
+      // blk.decrement();
+      // blk.decrement();
+
+      // // check getInt
+      // for(int i=0; i<3; i++){
+      //    fm.read(blk, p2);
+      //    System.out.println(blk.number());
+      //    for(int j=0; j<5; j++){
+      //       System.out.println("offset " + pos1+4*j + " contains " + p2.getInt(p2, pos1+4*j));  
+      //    }
+      //    blk.increment();
+      // }
+
+
+      // // check setShort
+      // pos1 += 6;
+      // System.out.println("Check setShort");
+      // for(int i=0; i<5; i++){
+      //    p1 = p1.fixedSetShort(fm, blk, p1, pos1+2*i, (short)(60+10*i));   
+      // }
+      // fm.write(blk, p1);
+      // System.out.println("Check get");
+      // blk.decrement();
+      // blk.decrement();
+
+      // // check getShort
+      // for(int i=0; i<3; i++){
+      //    fm.read(blk, p2);
+      //    System.out.println(blk.number());
+      //    for(int j=0; j<5; j++){
+      //       System.out.println("offset " + pos1+2*j + " contains " + p2.getShort(p2, pos1+2*j));  
+      //    }
+      //    blk.increment();
+      // }
+
+      // check setString
+      p1 = p1.fixedSetString(fm, blk, p1, pos1, "abc");
+      p1 = p1.fixedSetString(fm, blk, p1, pos1+40, "afohi");
+      fm.write(blk, p1);
       blk.decrement();
-      blk.decrement();
-      for(int i=0; i<3; i++){
+
+      // check getString
+      for(int i=0; i<2; i++){
          fm.read(blk, p2);
-         for(int j=0; j<3; j++){
-            System.out.println("offset " + pos2+4*j + " contains " + p2.getInt(pos1+4*j));  
-         }
+         System.out.println("offset " + pos1+40*i + " contains " + p2.getString(p2, pos1+40*i));
          blk.increment();
       }
    }

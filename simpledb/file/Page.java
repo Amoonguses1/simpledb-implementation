@@ -19,15 +19,14 @@ public class Page {
       bb = ByteBuffer.wrap(b);
    }
 
-   public boolean getBool (int offset) {
+   public boolean getBool (Page page, int offset) {
       byte[] b = new byte[1];
-      bb.get(b);
+      bb.get(b, offset % page.pagesize, 1);
       return b[0] == 1 ? true : false;
    }
 
    public Page fixedSetBool (FileMgr fm, BlockId blk, Page page, int offset, boolean value){
       if (page.pagesize - offset >= 1){
-         System.out.println("Page is not full");
          page.setBool(offset, value);
          return page;
       }else{
@@ -35,7 +34,7 @@ public class Page {
          fm.write(blk, page);
          blk.increment();
          Page new_page = new Page(fm.blockSize());
-         new_page.setBool(offset, value);
+         new_page.setBool(offset % page.pagesize, value);
          return new_page;
       }
    }
@@ -43,13 +42,12 @@ public class Page {
       bb.put(offset, (byte) (value ? 1: 0));
    }
 
-   public short getShort(int offset) {
-      return bb.getShort();
+   public short getShort(Page page, int offset) {
+      return bb.getShort(offset % page.pagesize);
    }
 
    public Page fixedSetShort(FileMgr fm, BlockId blk, Page page, int offset, short value){
       if (page.pagesize - offset >= 2){
-         System.out.println("Page is not full");
          page.setShort(offset, value);
          return page;
       }else{
@@ -57,7 +55,7 @@ public class Page {
          fm.write(blk, page);
          blk.increment();
          Page new_page = new Page(fm.blockSize());
-         new_page.setShort(offset, value);
+         new_page.setShort(offset % page.pagesize, value);
          return new_page;
       }
    }
@@ -65,12 +63,11 @@ public class Page {
       bb.putShort(offset, value);
    }
    
-   public int getInt(int offset) {
-      return bb.getInt(offset);
+   public int getInt(Page page, int offset) {
+      return bb.getInt(offset % page.pagesize);
    }
    public Page fixedSetInt(FileMgr fm, BlockId blk, Page page, int offset, int n) {
       if (page.pagesize - offset >= 4){
-         System.out.println("Page is not full");
          page.setInt(offset, n);
          return page;
       }else {
@@ -78,7 +75,7 @@ public class Page {
          fm.write(blk, page);
          blk.increment();
          Page new_page = new Page(fm.blockSize());
-         new_page.setInt(0, n);
+         new_page.setInt(offset % page.pagesize, n);
          return new_page;
       }
    }
@@ -101,14 +98,13 @@ public class Page {
       bb.put(b);
    }
    
-   public String getString(int offset) {
-      byte[] b = getBytes(offset);
+   public String getString(Page page, int offset) {
+      byte[] b = getBytes(offset % page.pagesize);
       return new String(b, CHARSET);
    }
 
    public Page fixedSetString(FileMgr fm, BlockId blk, Page page, int offset, String s) {
       if (page.pagesize - offset >= s.getBytes(CHARSET).length){
-         System.out.println("Page is not full");
          page.setString(offset, s);
          return page;
       }else {
@@ -116,7 +112,7 @@ public class Page {
          fm.write(blk, page);
          blk.increment();
          Page new_page = new Page(fm.blockSize());
-         new_page.setString(0, s);
+         new_page.setString(offset % page.pagesize, s);
          return new_page;
       }
    }
