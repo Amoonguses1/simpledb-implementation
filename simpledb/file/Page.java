@@ -19,69 +19,42 @@ public class Page {
       bb = ByteBuffer.wrap(b);
    }
 
-   public boolean getBool (Page page, int offset) {
+   public boolean getBool (int offset) {
       byte[] b = new byte[1];
-      bb.get(b, offset % page.pagesize, 1);
+      bb.get(b, offset, 1);
       return b[0] == 1 ? true : false;
    }
 
-   public Page fixedSetBool (FileMgr fm, BlockId blk, Page page, int offset, boolean value){
-      if (page.pagesize - offset >= 1){
-         page.setBool(offset, value);
-         return page;
-      }else{
-         System.out.println("Page is full");
-         fm.write(blk, page);
-         blk.increment();
-         Page new_page = new Page(fm.blockSize());
-         new_page.setBool(offset % page.pagesize, value);
-         return new_page;
-      }
-   }
-   public void setBool (int offset, boolean value) {
+   public Boolean setBool (int offset, boolean value) {
+      if(bb.capacity() < offset + 1){
+         return false;
+      } 
       bb.put(offset, (byte) (value ? 1: 0));
+      return true;
    }
 
-   public short getShort(Page page, int offset) {
-      return bb.getShort(offset % page.pagesize);
+   public short getShort(int offset) {
+      return bb.getShort(offset);
    }
 
-   public Page fixedSetShort(FileMgr fm, BlockId blk, Page page, int offset, short value){
-      if (page.pagesize - offset >= 2){
-         page.setShort(offset, value);
-         return page;
-      }else{
-         System.out.println("Page is full");
-         fm.write(blk, page);
-         blk.increment();
-         Page new_page = new Page(fm.blockSize());
-         new_page.setShort(offset % page.pagesize, value);
-         return new_page;
+   public Boolean setShort(int offset, short value) {
+      if(bb.capacity() < offset+ Short.SIZE/8){
+         return false;
       }
-   }
-   public void setShort(int offset, short value) {
       bb.putShort(offset, value);
+      return true;
    }
    
-   public int getInt(Page page, int offset) {
-      return bb.getInt(offset % page.pagesize);
-   }
-   public Page fixedSetInt(FileMgr fm, BlockId blk, Page page, int offset, int n) {
-      if (page.pagesize - offset >= 4){
-         page.setInt(offset, n);
-         return page;
-      }else {
-         System.out.println("Page is full");
-         fm.write(blk, page);
-         blk.increment();
-         Page new_page = new Page(fm.blockSize());
-         new_page.setInt(offset % page.pagesize, n);
-         return new_page;
-      }
+   public int getInt(int offset) {
+      return bb.getInt(offset);
    }
 
-   public void setInt(int offset, int n) {
+   public Boolean setInt(int offset, int n) {
+      if (bb.capacity() < offset + Integer.SIZE/8){
+         return false;
+      }
       bb.putInt(offset, n);
+      return true;
    }
 
    public byte[] getBytes(int offset) {
@@ -98,28 +71,45 @@ public class Page {
       bb.put(b);
    }
    
-   public String getString(Page page, int offset) {
-      byte[] b = getBytes(offset % page.pagesize);
+   public String getString(int offset) {
+      byte[] b = getBytes(offset);
       return new String(b, CHARSET);
    }
 
-   public Page fixedSetString(FileMgr fm, BlockId blk, Page page, int offset, String s) {
-      if (page.pagesize - offset >= s.getBytes(CHARSET).length){
-         page.setString(offset, s);
-         return page;
-      }else {
-         System.out.println("Page is full");
-         fm.write(blk, page);
-         blk.increment();
-         Page new_page = new Page(fm.blockSize());
-         new_page.setString(offset % page.pagesize, s);
-         return new_page;
+   public Boolean setString(int offset, String s) {
+      byte[] b = s.getBytes(CHARSET);
+      if(bb.capacity() < offset+b.length+Integer.SIZE/8){
+         return false;
       }
+      setBytes(offset, b);
+      return true;
    }
 
-   public void setString(int offset, String s) {
+   public String getStringIndiviudally(int offset){
+      byte delimiter = (byte)'\0';
+      int i;
+      for(i=offset; bb.get(i) != delimiter; i++){
+      }
+      byte[] b = new byte[i-offset];
+      for(int j = 0; j < b.length; j++){
+         b[j] = bb.get(offset+j);
+      }
+      return new String(b, CHARSET);
+   }
+   
+   public Boolean setStringIndividually(int offset, String s){
+      byte delimeter = '\0';
+      int byteslength = maxLength(offset+s.length()+1);
       byte[] b = s.getBytes(CHARSET);
-      setBytes(offset, b);
+      if (byteslength >= bb.capacity()){
+         return false;
+      }
+
+      for(int i = 0; i < b.length; i++){
+         bb.put(offset+i, b[i]);
+      }
+      bb.put(offset+b.length, delimeter);
+      return true;
    }
 
    public static int maxLength(int strlen) {
